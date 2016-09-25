@@ -513,6 +513,35 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
 
+  @BahHumbugs({
+	    @BahHumbug(opt="hopper_limit", def="false"),
+	    @BahHumbug(opt="hopper_limit_per_chunk", type=OptType.Int, def="4")
+  })
+  @EventHandler(priority = EventPriority.LOW)
+  public void hopperChunkLimit(BlockPlaceEvent e) {
+	  if (!config_.get("hopper_limit").getBool() || e.getBlock().getType() != Material.HOPPER) {
+		  return;
+	  }
+	  
+	  if(config_.get("hopper_limit_per_chunk").getInt() == 0){
+		  e.setCancelled(true);
+		  e.getPlayer().sendMessage(ChatColor.RED + "Hoppers are disabled");
+		  return;
+	  }
+	  
+	  int counter = 0;
+	  for(BlockState bs : e.getBlock().getChunk().getTileEntities()) {
+		  if(bs instanceof Hopper) {
+			  counter++;  
+			  if(counter >= config_.get("hopper_limit_per_chunk").getInt()) {
+				  e.setCancelled(true);
+				  e.getPlayer().sendMessage(ChatColor.RED + "The chunk you are in has reached the maximum amount of " + config_.get("hopper_limit_per_chunk").getInt() + " hoppers");
+				  return;
+			  }
+		  }
+	  }
+  }
+  
   public void dropInventory(Location loc, Inventory inv) {
     final World world = loc.getWorld();
     final int end = inv.getSize();
